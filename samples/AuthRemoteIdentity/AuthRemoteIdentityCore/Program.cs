@@ -108,8 +108,11 @@ app.UseSystemWebAdapters();
 
 app.MapDefaultControllerRoute();
 
-app.MapRemoteAppFallback()
-    .ShortCircuit();
+if (sampleMode == SampleMode.Remote)
+{
+    app.MapRemoteAppFallback()
+        .ShortCircuit();
+}
 
 app.MapDefaultEndpoints();
 
