@@ -31,6 +31,10 @@ namespace MvcCoreApp.Controllers
         [Authorize]
         public IActionResult UserInfo()
         {
+            var principal = Thread.CurrentPrincipal;
+            var user = HttpContext.User;
+            var cookies = HttpContext.Request.Cookies;
+            var owinContext = HttpContext.GetOwinContext();
             return View();
         }
 

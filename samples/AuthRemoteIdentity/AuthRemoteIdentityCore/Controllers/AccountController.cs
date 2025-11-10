@@ -384,8 +384,8 @@ namespace MvcCoreApp.Controllers
         //
         // POST: /Account/LogOff
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        [SampleVisibleMode(App = SampleMode.Remote, Include = true)]
+        // [ValidateAntiForgeryToken]
+        // [SampleVisibleMode(App = SampleMode.Remote, Include = true)]
         public IActionResult Logout()
         {
             HttpContext.SignOutAsync("SharedCookie");
