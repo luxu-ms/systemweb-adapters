@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using AuthRemoteIdentityCore.Services;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.AspNetCore.Authorization;
@@ -20,9 +21,12 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.Owin;
 using Microsoft.Owin.Extensions;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Owin.Security.Interop;
+using Microsoft.Owin.Security.OAuth;
 using MvcApp;
 using MvcApp.Models;
+using MvcCoreApp.Services;
 using Owin;
 using Yarp.ReverseProxy.Transforms;
 
@@ -35,10 +39,10 @@ builder.AddSystemWebAdapters();
 builder.Services.AddSingleton<MatcherPolicy>(new SamplesPolicy(sampleMode));
 
 // These must match the data protection settings in MvcApp Startup.Auth.cs for cookie sharing to work
-var sharedApplicationName = "CommonMvcAppName";
-builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(Path.GetTempPath(), "sharedkeys", sharedApplicationName)))
-    .SetApplicationName(sharedApplicationName);
+//var sharedApplicationName = "CommonMvcAppName";
+//builder.Services.AddDataProtection()
+//    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(Path.GetTempPath(), "sharedkeys", sharedApplicationName)))
+//    .SetApplicationName(sharedApplicationName);
 
 if (sampleMode == SampleMode.Remote)
 {
@@ -79,6 +83,37 @@ else if (sampleMode == SampleMode.Owin)
                 TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector))
             });
         });
+}
+else if (sampleMode == SampleMode.Owin_AccessToken)
+{
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = OwinAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OwinAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultScheme = OwinAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddOwinAuthentication((app, services) =>
+    {
+        // TODO: add in the Owin config
+        //use a cookie to temporarily store information about a user logging in with a third party login provider
+        app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalBearer);
+        app.SetDataProtectionProvider(new MyDpapiDataProtectionProvider());
+        var OAuthBearerOptions = new OAuthBearerAuthenticationOptions();
+
+        var oAuthServerOptions = new OAuthAuthorizationServerOptions
+        {
+            AllowInsecureHttp = true,
+            TokenEndpointPath = new Microsoft.Owin.PathString("/api/v1/token"),
+            Provider = new SimpleAuthorizationServerProvider(),
+        };
+
+        // Token Generation
+        app.UseOAuthAuthorizationServer(oAuthServerOptions);
+        app.UseOAuthBearerAuthentication(OAuthBearerOptions);
+    });
+
+
+    builder.Services.AddAuthorization();
 }
 
 // Add services to the container.

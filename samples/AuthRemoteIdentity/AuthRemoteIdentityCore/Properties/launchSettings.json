@@ -7,7 +7,7 @@
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "SAMPLE_MODE": "Owin"
+        "SAMPLE_MODE": "Owin_AccessToken"
       },
 
       "ConnectionStrings": {
@@ -27,7 +27,7 @@
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "SAMPLE_MODE": "Owin"
+        "SAMPLE_MODE": "Owin_AccessToken"
       },
 
       "ConnectionStrings": {
